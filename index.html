@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lachoo College Result Portal</title>
+    <style>
+        body { font-family: 'Arial', sans-serif; background-color: #f4f4f4; margin: 0; padding: 10px; }
+        .container { max-width: 900px; margin: auto; background: #fff; border: 1px solid #0081a7; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        .banner { width: 100%; border-bottom: 4px solid #0081a7; }
+        .banner img { width: 100%; display: block; }
+        .search-container { padding: 40px; text-align: center; }
+        .form-group { margin-bottom: 15px; text-align: left; max-width: 450px; margin-left: auto; margin-right: auto; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; color: #333; }
+        select, input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        .captcha-flex { display: flex; align-items: center; gap: 10px; }
+        .captcha-box { background: #000; color: #fff; padding: 8px 15px; font-weight: bold; letter-spacing: 2px; user-select: none; }
+        .btn { background-color: #007bff; color: white; padding: 12px 25px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; margin-top: 10px; }
+        .result-container { padding: 20px; display: none; }
+        .result-header { text-align: center; margin-bottom: 15px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid #777; padding: 6px; text-align: center; font-size: 13px; }
+        .bg-purple { background-color: #b3b3ff; font-weight: bold; }
+        .status-nc { background-color: #b3b3ff; font-weight: bold; color: #000; }
+        @media print { .no-print { display: none; } }
+    </style>
+</head>
+<body onload="generateCaptcha()">
+
+<div class="container">
+    <div class="banner">
+        <img src="https://image2url.com/r2/default/images/1770819697367-8db34d50-9b10-41ea-bb2c-5e45a83036a4.png" alt="College Banner">
+    </div>
+
+    <div id="searchBox" class="search-container">
+        <h3>Get Result of Main Examination</h3>
+        <div class="form-group">
+            <label>Select Course *</label>
+            <select id="course">
+                <option value="">-------Select Your Course---</option>
+                <option value="BCA1">BCA Semester I</option>
+                <option value="BCA2">BCA Semester II</option>
+                <option value="BBA1">BBA Semester I</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Enter Roll No. *</label>
+            <input type="text" id="rollNo" placeholder="Enter Roll No.">
+        </div>
+        <div class="form-group">
+            <label>Enter Code *</label>
+            <div class="captcha-flex">
+                <div class="captcha-box" id="captchaValue"></div>
+                <input type="text" id="captchaInput" style="width: 120px;" placeholder="Code">
+            </div>
+        </div>
+        <button class="btn" onclick="fetchResult()">Get Result</button>
+        <p id="errorMsg" style="color: red; display: none; font-weight: bold;"></p>
+    </div>
+
+    <div id="resultBox" class="result-container">
+        <div class="result-header">
+            <strong>Result Declared on : 11-Feb-26</strong><br>
+            <strong id="displayCourse"></strong>
+        </div>
+        <table>
+            <tr class="bg-purple"><td style="text-align: left;">Roll No.</td><td colspan="6" id="displayRoll" style="text-align: left;"></td></tr>
+            <tr class="bg-purple"><td style="text-align: left;">Name</td><td colspan="6" id="displayName" style="text-align: left;"></td></tr>
+            <tr class="bg-purple"><td style="text-align: left;">Course</td><td colspan="6" id="displayCourseLabel" style="text-align: left;"></td></tr>
+            <tr class="bg-purple">
+                <td>Subject</td><td>CIA MAX</td><td>CIA OBT</td><td>ESE MAX</td><td>ESE OBT</td><td>Total MAX</td><td>Total MIN</td><td>Total OBT</td>
+            </tr>
+            <tbody id="marksBody"></tbody>
+            <tr class="bg-purple">
+                <td colspan="5" style="text-align: left;">Grand Total</td>
+                <td id="grandMax"></td><td id="grandMin"></td><td id="grandObt"></td>
+            </tr>
+            <tr>
+                <td class="bg-purple">Result</td>
+                <td colspan="7" class="status-nc" id="finalResult"></td>
+            </tr>
+        </table>
+        <div style="margin-top: 20px; text-align: center;" class="no-print">
+            <button class="btn" style="background: #6c757d;" onclick="location.reload()">New Search</button>
+            <button class="btn" onclick="window.print()">Print Result</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentCaptcha = "";
+
+    function generateCaptcha() {
+        currentCaptcha = Math.floor(10000 + Math.random() * 90000).toString();
+        document.getElementById('captchaValue').innerText = currentCaptcha;
+    }
+
+    const database = {
+        "253501170": {
+            name: "PRACHI PANWAR",
+            course: "BCA Semester I",
+            marks: [
+                ["AELNG112", 30, 23, 70, 49, 100, 40],
+                ["CCBCA111", 30, 22, 70, 29, 100, 40],
+                ["CCBCA112", 30, 10, 70, 43, 100, 40],
+                ["CCBCA113", 30, 10, 70, 50, 100, 40], // Updated: Total 60 (10+50)
+                ["CCBCA121", 30, 18, 70, 40, 100, 40],
+                ["CCBCA122", 30, 21, 70, 40, 100, 40],
+                ["DEMTH111", 30, 18, 70, 41, 100, 40], // Updated: Total 59 (18+41)
+                ["OECSC111", 15, 5, 35, 21, 50, 20],
+                ["VASPL121", 15, 14, 35, 24, 50, 20]
+            ]
+        },
+        "253501180": {
+            name: "AMIT KUMAR",
+            course: "BCA Semester II",
+            marks: [["BCA201", 30, 25, 70, 50, 100, 40]]
+        }
+    };
+
+    function fetchResult() {
+        const roll = document.getElementById('rollNo').value.trim();
+        const captchaInput = document.getElementById('captchaInput').value.trim();
+        const errorMsg = document.getElementById('errorMsg');
+        
+        errorMsg.style.display = 'none';
+
+        if (captchaInput !== currentCaptcha) {
+            errorMsg.innerText = "Invalid Captcha Code!";
+            errorMsg.style.display = 'block';
+            generateCaptcha();
+            return;
+        }
+
+        const student = database[roll];
+        if (student) {
+            document.getElementById('searchBox').style.display = 'none';
+            document.getElementById('resultBox').style.display = 'block';
+            
+            document.getElementById('displayRoll').innerText = roll;
+            document.getElementById('displayName').innerText = student.name;
+            document.getElementById('displayCourseLabel').innerText = student.course;
+            document.getElementById('displayCourse').innerText = `${student.course}, Examination 2025, Winter (Main/ATKT)`;
+
+            let tableBody = "";
+            let gMax = 0, gMin = 0, gObt = 0;
+            let isNc = false;
+
+            student.marks.forEach(m => {
+                let total = m[2] + m[4]; // Proper calculation: CIA + ESE
+                let fail = total < m[6];
+                if (fail) isNc = true;
+
+                gMax += m[5]; gMin += m[6]; gObt += total;
+
+                tableBody += `<tr>
+                    <td>${m[0]}</td><td>${m[1]}</td><td>${m[2]}</td><td>${m[3]}</td><td>${m[4]}</td><td>${m[5]}</td><td>${m[6]}</td>
+                    <td style="font-weight:bold;">${total}${fail ? '*' : ''}</td>
+                </tr>`;
+            });
+
+            document.getElementById('marksBody').innerHTML = tableBody;
+            document.getElementById('grandMax').innerText = gMax;
+            document.getElementById('grandMin').innerText = gMin;
+            document.getElementById('grandObt').innerText = gObt;
+            document.getElementById('finalResult').innerText = isNc ? "NC" : "PASS";
+        } else {
+            errorMsg.innerText = "Data not found or Invalid Roll No!";
+            errorMsg.style.display = 'block';
+            generateCaptcha();
+        }
+    }
+</script>
+
+</body>
+</html>
